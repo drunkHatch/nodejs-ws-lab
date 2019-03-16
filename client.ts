@@ -105,3 +105,65 @@ class LabDemoGame extends Phaser.Game {
 window.addEventListener("load", () => {
   new LabDemoGame(config);
 })
+
+function uuid(
+  a?: any               // placeholder
+): string {
+  return a              // if the placeholder was passed, return
+    ? (                 // a random number from 0 to 15
+      a ^               // unless b is 8,
+      Math.random()     // in which case
+      * 16              // a random number from
+      >> a / 4          // 8 to 11
+    ).toString(16)      // in hexadecimal
+    : (                 // or otherwise a concatenated string:
+      1e7.toString() +  // 10000000 +
+      -1e3 +            // -1000 +
+      -4e3 +            // -4000 +
+      -8e3 +            // -80000000 +
+      -1e11             // -100000000000,
+    ).replace(          // replacing
+      /[018]/g,         // zeroes, ones, and eights with
+      uuid              // random hex digits
+    )
+}
+class GameScene extends Phaser.Scene {
+
+  private VELOCITY = 100;
+  private wsClient?: WebSocket;
+
+  // delete this
+  // private player?: Phaser.GameObjects.Sprite;
+  // ...
+
+  private id = uuid();
+  private players: {[key: string]: Phaser.GameObjects.Sprite} = {};
+
+  // ...
+
+// Refactor your code such that all references to this.player
+// becomes this.players[this.id]
+
+// create
+public create() {
+  // ...
+  this.players[this.id] = this.physics.add.sprite(48, 48, "player", 1);
+  this.physics.add.collider(this.players[this.id], layer);
+  this.cameras.main.startFollow(this.players[this.id]);
+}
+
+
+// update
+public update() {
+ if (!moving) {
+  (player.body as Phaser.Physics.Arcade.Body).setVelocity(0);
+  player.anims.stop();
+} else if (this.wsClient) {
+  this.wsClient.send(JSON.stringify({
+    id: this.id,
+    x: player.x,
+    y: player.y,
+    frame: player.frame.name
+  }));
+}
+}
